@@ -117,12 +117,11 @@
             transform: scale(1.15);
         }
         
-        /* Hiệu ứng Glow trắng hồng nhạt */
+        /* Đổi Glow sang màu hồng đậm */
         .option-item.active img {
-            filter: brightness(1) drop-shadow(0 0 2vw #fff0f5);
+            filter: brightness(1) drop-shadow(0 0 2vw #ff1493);
         }
 
-        /* Trạng thái đã hết số lượng (Ám hồng nhạt) */
         .option-item.exhausted img {
             filter: sepia(1) hue-rotate(315deg) saturate(2) brightness(0.7) !important;
             opacity: 0.3;
@@ -131,27 +130,32 @@
             opacity: 0.3;
         }
 
-        /* Nút quay */
+        /* Nút quay - Hiệu ứng Glass mờ màu hồng nhẹ */
         #btn-spin {
             margin-top: 2.5vw; 
-            padding: 1vw 4vw;
-            background-color: #8a1538;
-            color: #fff;
-            border: 2px solid #fff;
+            padding: 0.8vw 3.5vw; /* Làm nhỏ nút */
+            background: rgba(255, 182, 193, 0.25); /* Nền kính hồng mờ */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #8a1538; /* Chữ đỏ đô để nổi bật trên nền kính */
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 3vw;
-            font-size: 1.6vw;
+            font-size: 1.4vw; /* Làm nhỏ font chữ */
+            font-weight: bold;
             font-family: inherit;
             cursor: pointer;
-            box-shadow: 0 0.5vw 1vw rgba(0,0,0,0.3);
-            transition: 0.2s;
+            box-shadow: 0 0.5vw 1vw rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
         #btn-spin:hover:not(:disabled) {
-            background-color: #a81c45;
+            background: rgba(255, 182, 193, 0.45);
             transform: scale(1.05);
+            box-shadow: 0 0.5vw 1.5vw rgba(0,0,0,0.15);
         }
         #btn-spin:disabled {
-            background-color: #555;
-            border-color: #777;
+            background: rgba(150, 150, 150, 0.2);
+            color: #666;
+            border-color: rgba(255, 255, 255, 0.2);
             cursor: not-allowed;
             box-shadow: none;
         }
@@ -159,20 +163,47 @@
         /* -- KHU VỰC TRÁI (KẾT QUẢ) -- */
         .result-zone {
             position: absolute;
-            left: 34%;
+            left: 32%;
             top: 72%; 
             color: #8a1538;
+            width: 16vw; 
         }
 
         .result-zone h3 {
-            font-size: 1.4vw; 
+            font-size: 1.5vw; 
             margin-bottom: 0.5vw;
+            text-align: left; 
         }
 
         .result-zone ul {
             list-style: none;
-            font-size: 1.05vw; 
-            line-height: 1.6vw;
+            width: 100%;
+            padding: 0;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: baseline; 
+            width: 100%;
+            font-size: 1.1vw;
+            line-height: 1.7vw;
+        }
+
+        .group-name {
+            white-space: nowrap;
+        }
+
+        .dots {
+            flex-grow: 1; 
+            border-bottom: 2px dotted #8a1538; 
+            margin: 0 0.4vw;
+            opacity: 0.5;
+            position: relative;
+        }
+
+        .result-name {
+            white-space: nowrap;
+            font-weight: bold;
         }
 
         /* -- POPUP THÔNG BÁO (HIỆU ỨNG GLASS + NOISE) -- */
@@ -195,15 +226,11 @@
         }
         
         .modal-box {
-            /* Nền mờ Gradient kết hợp Layer Noise bằng SVG */
             background: 
                 linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%),
                 url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
-            
-            /* Thuộc tính Blur xuyên thấu xuống video nền */
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            
             border: 1px solid rgba(255, 255, 255, 0.5);
             padding: 3vw 5vw;
             border-radius: 1.5vw;
@@ -273,7 +300,6 @@
     <!-- Popup -->
     <div id="result-modal" class="modal">
         <div class="modal-box">
-            <!-- Vùng hiển thị nội dung động -->
             <div id="modal-content-area"></div>
             <button id="btn-close-modal">Xác nhận</button>
         </div>
@@ -305,11 +331,15 @@
     const modalContentArea = document.getElementById('modal-content-area');
     const btnCloseModal = document.getElementById('btn-close-modal');
 
-    // Render danh sách trống lúc đầu
+    // Khởi tạo danh sách kết quả (Ban đầu cột bên phải để trống)
     groups.forEach((group, index) => {
         const li = document.createElement('li');
-        li.id = `result-${index}`;
-        li.innerText = `${group}: .....`;
+        li.className = 'result-item';
+        li.innerHTML = `
+            <span class="group-name">${group}</span>
+            <span class="dots"></span>
+            <span class="result-name" id="res-val-${index}"></span>
+        `;
         listResults.appendChild(li);
     });
 
@@ -342,8 +372,8 @@
     });
 
     function finalizeSpin(groupName) {
-        // Lượt của khối BO -> Bốc luôn cho cả BO và CNQN
         if (currentTurnIndex === 4) {
+            // Lượt BO & CNQN
             const randomIndexBO = Math.floor(Math.random() * prizePool.length);
             const winningIdBO = prizePool[randomIndexBO];
             prizePool.splice(randomIndexBO, 1);
@@ -366,12 +396,12 @@
                 <div style="display: flex; justify-content: center; gap: 6vw; margin-bottom: 2.5vw;">
                     <div style="text-align: center;">
                         <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">Khối BO</h3>
-                        <img src="${winningIdBO}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #fff0f5); object-fit: contain;">
+                        <img src="${winningIdBO}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #ff1493); object-fit: contain;">
                         <p style="font-size: 1.6vw; color: #8a1538; margin-top: 1vw; font-weight: bold;">${winningOptionBO.name}</p>
                     </div>
                     <div style="text-align: center;">
                         <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">CNQN</h3>
-                        <img src="${winningIdCNQN}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #fff0f5); object-fit: contain;">
+                        <img src="${winningIdCNQN}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #ff1493); object-fit: contain;">
                         <p style="font-size: 1.6vw; color: #8a1538; margin-top: 1vw; font-weight: bold;">${winningOptionCNQN.name}</p>
                     </div>
                 </div>
@@ -381,8 +411,8 @@
                 modalContentArea.innerHTML = dualHtml;
                 modal.classList.add('show');
                 
-                document.getElementById(`result-4`).innerText = `Khối BO: ${winningOptionBO.name}`;
-                document.getElementById(`result-5`).innerText = `CNQN: ${winningOptionCNQN.name}`;
+                document.getElementById(`res-val-4`).innerText = winningOptionBO.name;
+                document.getElementById(`res-val-5`).innerText = winningOptionCNQN.name;
                 
                 optionsData.forEach(opt => {
                     if (opt.maxCount <= 0) document.getElementById(`opt-${opt.id}`).classList.add('exhausted');
@@ -393,7 +423,7 @@
             }, 600);
 
         } else {
-            // Lượt bốc bình thường (Từ A1 -> A5)
+            // Lượt quay thông thường
             const randomIndex = Math.floor(Math.random() * prizePool.length);
             const winningId = prizePool[randomIndex];
             
@@ -409,7 +439,7 @@
             const msg = `Chúc mừng ${groupName} đã bốc trúng lựa chọn ${winningOption.name}`;
 
             const singleHtml = `
-                <img src="${winningId}.png" style="width: 14vw; filter: drop-shadow(0 0 2vw #fff0f5); margin-bottom: 1.5vw; object-fit: contain;">
+                <img src="${winningId}.png" style="width: 14vw; filter: drop-shadow(0 0 2vw #ff1493); margin-bottom: 1.5vw; object-fit: contain;">
                 <h2 style="font-size: 2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2.5vw; text-shadow: 0 0 10px rgba(255,255,255,0.8);">${msg}</h2>
             `;
 
@@ -417,7 +447,7 @@
                 modalContentArea.innerHTML = singleHtml;
                 modal.classList.add('show');
                 
-                document.getElementById(`result-${currentTurnIndex}`).innerText = `${groupName}: ${winningOption.name}`;
+                document.getElementById(`res-val-${currentTurnIndex}`).innerText = winningOption.name;
                 
                 if (winningOption.maxCount <= 0) {
                     finalEl.classList.add('exhausted');
