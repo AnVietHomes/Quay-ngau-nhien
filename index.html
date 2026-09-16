@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vòng Quay Nhân Phẩm - An Viet</title>
+    <style>
+        /* Khai báo font chữ (Đảm bảo đường dẫn tới file font của bạn chính xác) */
+        @font-face {
+            font-family: 'Beautique Display Condensed';
+            src: url('fonts/BeautiqueDisplayCondensed.ttf') format('truetype'); 
+            /* Đổi đuôi .ttf, .otf, .woff tùy định dạng bạn có */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #000; /* Nền đen để tạo viền letterbox nếu màn hình không phải 16:9 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Beautique Display Condensed', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Container ép tỷ lệ 16:9 tuyệt đối, không xô lệch */
+        .ratio-container {
+            position: relative;
+            width: 100vw;
+            max-width: 177.78vh; /* 16/9 * 100 */
+            height: 100vh;
+            max-height: 56.25vw; /* 9/16 * 100 */
+            background-color: #f7dcd6;
+            overflow: hidden;
+        }
+
+        /* Video nền */
+        .bg-video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* Lớp chứa nội dung */
+        .content {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        /* -- KHU VỰC PHẢI (VÒNG QUAY) -- */
+        .right-zone {
+            position: absolute;
+            right: 5%;
+            top: 10%;
+            width: 55%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title {
+            color: #8a1538;
+            font-size: 3.5vw;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            color: #d16b7c;
+            font-size: 1.2vw;
+            margin-top: 0.5vw;
+            text-align: center;
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: center;
+            gap: 4vw;
+            margin-top: 4vw;
+        }
+
+        .option-item {
+            position: relative;
+            width: 11vw;
+            height: 11vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.1s ease;
+        }
+
+        .img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .option-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        /* Lớp mờ đen/đỏ #330011 */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(51, 0, 17, 0.75); 
+            border-radius: 50%;
+            transition: opacity 0.2s ease;
+        }
+
+        .option-item span {
+            color: #8a1538;
+            font-size: 1.5vw;
+            margin-top: 1vw;
+        }
+
+        /* Trạng thái đang sáng (đang quay trúng) */
+        .option-item.active {
+            transform: scale(1.15);
+        }
+        .option-item.active .overlay {
+            opacity: 0; /* Xóa lớp mờ */
+        }
+        .option-item.active .img-wrapper {
+            box-shadow: 0 0 2vw #ffdf00; /* Viền sáng vàng */
+        }
+
+        /* Trạng thái đã hết số lượng (Tô đen) */
+        .option-item.exhausted img {
+            filter: brightness(0);
+        }
+        .option-item.exhausted .overlay {
+            opacity: 0;
+        }
+        .option-item.exhausted span {
+            opacity: 0.5;
+        }
+
+        /* Nút quay */
+        #btn-spin {
+            margin-top: 4vw;
+            padding: 1vw 4vw;
+            background-color: #8a1538;
+            color: #fff;
+            border: 2px solid #fff;
+            border-radius: 3vw;
+            font-size: 1.6vw;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 0.5vw 1vw rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+        #btn-spin:hover:not(:disabled) {
+            background-color: #a81c45;
+            transform: scale(1.05);
+        }
+        #btn-spin:disabled {
+            background-color: #555;
+            border-color: #777;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* -- KHU VỰC TRÁI (KẾT QUẢ) -- */
+        .result-zone {
+            position: absolute;
+            left: 35%;
+            top: 60%;
+            color: #8a1538;
+        }
+
+        .result-zone h3 {
+            font-size: 1.8vw;
+            margin-bottom: 0.5vw;
+        }
+
+        .result-zone ul {
+            list-style: none;
+            font-size: 1.3vw;
+            line-height: 1.8vw;
+        }
+
+        /* -- POPUP THÔNG BÁO -- */
+        .modal {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-box {
+            background: #fff;
+            border: 3px solid #8a1538;
+            padding: 3vw 5vw;
+            border-radius: 1vw;
+            text-align: center;
+            box-shadow: 0 0 3vw rgba(255,255,255,0.2);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        .modal.show .modal-box {
+            transform: scale(1);
+        }
+        .modal-box h2 {
+            color: #8a1538;
+            font-size: 2.5vw;
+            margin-bottom: 2vw;
+        }
+        #btn-close-modal {
+            background: #8a1538;
+            color: white;
+            border: none;
+            padding: 0.8vw 3vw;
+            font-size: 1.5vw;
+            border-radius: 2vw;
+            cursor: pointer;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+
+<div class="ratio-container">
+    <!-- Nền Video -->
+    <video autoplay loop muted class="bg-video">
+        <source src="back.mp4" type="video/mp4">
+    </video>
+
+    <!-- Nội dung giao diện -->
+    <div class="content">
+        <!-- Danh sách kết quả -->
+        <div class="result-zone">
+            <h3>DANH SÁCH KẾT QUẢ</h3>
+            <ul id="list-results">
+                <!-- Javascript sẽ render danh sách vào đây -->
+            </ul>
+        </div>
+
+        <!-- Khu vực vòng quay -->
+        <div class="right-zone">
+            <h1 class="title">VÒNG QUAY NHÂN PHẨM</h1>
+            <p class="subtitle">Cơ hội chỉ có một, trúng cái nào nhận cái đó<br>không có cơ hội làm lại!!!</p>
+
+            <div class="options-row">
+                <div class="option-item" id="opt-3">
+                    <div class="img-wrapper">
+                        <img src="3.png" alt="Mâm đồng">
+                        <div class="overlay"></div>
+                    </div>
+                    <span>Mâm đồng</span>
+                </div>
+                <div class="option-item" id="opt-2">
+                    <div class="img-wrapper">
+                        <img src="2.png" alt="Mẹt tre">
+                        <div class="overlay"></div>
+                    </div>
+                    <span>Mẹt tre</span>
+                </div>
+                <div class="option-item" id="opt-1">
+                    <div class="img-wrapper">
+                        <img src="1.png" alt="Đế nhung">
+                        <div class="overlay"></div>
+                    </div>
+                    <span>Đế nhung</span>
+                </div>
+            </div>
+
+            <button id="btn-spin">KIỂM TRA NHÂN PHẨM</button>
+        </div>
+    </div>
+
+    <!-- Popup Thông báo trúng giải -->
+    <div id="result-modal" class="modal">
+        <div class="modal-box">
+            <h2 id="modal-msg">Chúc mừng ...</h2>
+            <button id="btn-close-modal">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cấu hình dữ liệu mâm
+    const optionsData = [
+        { id: 3, name: "Mâm đồng", maxCount: 2 },
+        { id: 2, name: "Mẹt tre", maxCount: 2 },
+        { id: 1, name: "Đế nhung", maxCount: 2 }
+    ];
+
+    // Cấu hình danh sách khối quay lần lượt
+    const groups = ["Khối A1", "Khối A2", "Khối A3", "Khối A5", "Khối BO", "CNQN"];
+    
+    // Khởi tạo hồ chứa giải thưởng (tổng cộng 6 mâm cho 6 nhóm)
+    let prizePool = [];
+    optionsData.forEach(opt => {
+        for(let i = 0; i < opt.maxCount; i++) {
+            prizePool.push(opt.id);
+        }
+    });
+
+    let currentTurnIndex = 0;
+    let isSpinning = false;
+
+    // Các phần tử DOM
+    const btnSpin = document.getElementById('btn-spin');
+    const listResults = document.getElementById('list-results');
+    const modal = document.getElementById('result-modal');
+    const modalMsg = document.getElementById('modal-msg');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+
+    // Khởi tạo hiển thị danh sách kết quả (Mặc định .....)
+    groups.forEach((group, index) => {
+        const li = document.createElement('li');
+        li.id = `result-${index}`;
+        li.innerText = `${group}: .....`;
+        listResults.appendChild(li);
+    });
+
+    // Lắng nghe sự kiện quay
+    btnSpin.addEventListener('click', () => {
+        if(currentTurnIndex >= groups.length || isSpinning) return;
+        
+        isSpinning = true;
+        btnSpin.disabled = true;
+        
+        const currentGroup = groups[currentTurnIndex];
+        
+        // Lấy danh sách các mâm CÒN SỐ LƯỢNG để làm hiệu ứng nhấp nháy
+        const availableOptions = optionsData.filter(o => o.maxCount > 0).map(o => o.id);
+        
+        let spinCount = 0;
+        const totalSpins = 30 + Math.floor(Math.random() * 10); // Lặp khoảng 30-40 lần
+        const spinSpeed = 80; // Tốc độ nhấp nháy (ms)
+
+        // Hiệu ứng vòng lặp nhấp nháy
+        const interval = setInterval(() => {
+            // Tắt sáng tất cả
+            document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
+            
+            // Bật sáng 1 mâm ngẫu nhiên (chỉ trong những mâm còn hàng)
+            const randomId = availableOptions[Math.floor(Math.random() * availableOptions.length)];
+            document.getElementById(`opt-${randomId}`).classList.add('active');
+
+            spinCount++;
+            
+            // Điểm dừng
+            if (spinCount >= totalSpins) {
+                clearInterval(interval);
+                finalizeSpin(currentGroup);
+            }
+        }, spinSpeed);
+    });
+
+    // Hàm chốt kết quả
+    function finalizeSpin(groupName) {
+        // Bốc ngẫu nhiên 1 mâm thật từ hồ chứa (prizePool)
+        const randomIndex = Math.floor(Math.random() * prizePool.length);
+        const winningId = prizePool[randomIndex];
+        
+        // Xóa mâm vừa trúng khỏi hồ chứa để không bốc quá 2 lần
+        prizePool.splice(randomIndex, 1);
+        
+        // Trừ đi số lượng trong cấu hình để quản lý bôi đen giao diện
+        const winningOption = optionsData.find(o => o.id === winningId);
+        winningOption.maxCount--;
+
+        // Xóa active tất cả và highlight cái trúng
+        document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
+        const finalEl = document.getElementById(`opt-${winningId}`);
+        finalEl.classList.add('active');
+
+        // Tạo câu chúc mừng (Xử lý riêng tiền tố cho CNQN)
+        let prefix = groupName === 'CNQN' ? 'CNQN' : groupName;
+        const msg = `Chúc mừng ${prefix} đã bốc trúng lựa chọn ${winningOption.name}`;
+
+        // Hiển thị kết quả & modal sau 0.5s để người xem kịp nhìn mâm sáng lên
+        setTimeout(() => {
+            modalMsg.innerText = msg;
+            modal.classList.add('show');
+            
+            // Cập nhật text danh sách bên trái
+            document.getElementById(`result-${currentTurnIndex}`).innerText = `${groupName}: ${winningOption.name}`;
+            
+            // Kiểm tra nếu mâm này hết (count = 0) -> Cho vào trạng thái bôi đen
+            if (winningOption.maxCount === 0) {
+                finalEl.classList.add('exhausted');
+            }
+
+            currentTurnIndex++;
+            isSpinning = false;
+            
+        }, 600);
+    }
+
+    // Đóng Popup và chuẩn bị lượt tiếp theo
+    btnCloseModal.addEventListener('click', () => {
+        modal.classList.remove('show');
+        
+        // Tắt độ sáng của option vừa trúng 
+        document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
+
+        // Kiểm tra nếu đã quay hết các khối thì khóa luôn nút
+        if (currentTurnIndex >= groups.length) {
+            btnSpin.innerText = "ĐÃ HOÀN THÀNH";
+            btnSpin.disabled = true;
+        } else {
+            btnSpin.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
