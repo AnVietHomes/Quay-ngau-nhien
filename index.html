@@ -117,8 +117,9 @@
             transform: scale(1.15);
         }
         
+        /* Hiệu ứng Glow trắng hồng nhạt */
         .option-item.active img {
-            filter: brightness(1) drop-shadow(0 0 2vw #ff7eb3);
+            filter: brightness(1) drop-shadow(0 0 2vw #fff0f5);
         }
 
         /* Trạng thái đã hết số lượng (Ám hồng nhạt) */
@@ -174,12 +175,12 @@
             line-height: 1.6vw;
         }
 
-        /* -- POPUP THÔNG BÁO (HIỆU ỨNG GLASS) -- */
+        /* -- POPUP THÔNG BÁO (HIỆU ỨNG GLASS + NOISE) -- */
         .modal {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -192,19 +193,27 @@
             opacity: 1;
             pointer-events: all;
         }
+        
         .modal-box {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            /* Nền mờ Gradient kết hợp Layer Noise bằng SVG */
+            background: 
+                linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            
+            /* Thuộc tính Blur xuyên thấu xuống video nền */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.5);
             padding: 3vw 5vw;
             border-radius: 1.5vw;
             text-align: center;
-            box-shadow: 0 1vw 3vw rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1vw 4vw rgba(0, 0, 0, 0.25);
             transform: scale(0.8);
             transition: transform 0.3s ease;
-            max-width: 65vw; /* Tăng max-width để chứa đủ 2 kết quả lượt cuối */
+            max-width: 65vw; 
         }
+        
         .modal.show .modal-box {
             transform: scale(1);
         }
@@ -333,9 +342,8 @@
     });
 
     function finalizeSpin(groupName) {
-        // Kiểm tra nếu là lượt của khối BO (Index = 4) -> Bốc luôn cho cả BO và CNQN
+        // Lượt của khối BO -> Bốc luôn cho cả BO và CNQN
         if (currentTurnIndex === 4) {
-            // Bốc cho Khối BO
             const randomIndexBO = Math.floor(Math.random() * prizePool.length);
             const winningIdBO = prizePool[randomIndexBO];
             prizePool.splice(randomIndexBO, 1);
@@ -343,31 +351,28 @@
             const winningOptionBO = optionsData.find(o => o.id === winningIdBO);
             winningOptionBO.maxCount--;
 
-            // Lúc này trong hồ chỉ còn 1 phần tử duy nhất dành cho CNQN
             const winningIdCNQN = prizePool[0];
             prizePool.splice(0, 1);
             
             const winningOptionCNQN = optionsData.find(o => o.id === winningIdCNQN);
             winningOptionCNQN.maxCount--;
 
-            // Cập nhật Highlight mâm (sáng cả 2 mâm nếu 2 khối bốc khác nhau)
             document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`opt-${winningIdBO}`).classList.add('active');
             document.getElementById(`opt-${winningIdCNQN}`).classList.add('active');
 
-            // Render giao diện Popup 2 kết quả
             const dualHtml = `
-                <h2 style="font-size: 2.2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2vw;">Chúc mừng 2 khối cuối cùng đã hoàn tất bốc thăm!</h2>
+                <h2 style="font-size: 2.2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2vw; text-shadow: 0 0 10px rgba(255,255,255,0.8);">Chúc mừng 2 khối cuối cùng đã hoàn tất bốc thăm!</h2>
                 <div style="display: flex; justify-content: center; gap: 6vw; margin-bottom: 2.5vw;">
                     <div style="text-align: center;">
                         <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">Khối BO</h3>
-                        <img src="${winningIdBO}.png" style="width: 12vw; filter: drop-shadow(0 0 1vw #ff7eb3); object-fit: contain;">
-                        <p style="font-size: 1.6vw; color: #d16b7c; margin-top: 1vw; font-weight: bold;">${winningOptionBO.name}</p>
+                        <img src="${winningIdBO}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #fff0f5); object-fit: contain;">
+                        <p style="font-size: 1.6vw; color: #8a1538; margin-top: 1vw; font-weight: bold;">${winningOptionBO.name}</p>
                     </div>
                     <div style="text-align: center;">
                         <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">CNQN</h3>
-                        <img src="${winningIdCNQN}.png" style="width: 12vw; filter: drop-shadow(0 0 1vw #ff7eb3); object-fit: contain;">
-                        <p style="font-size: 1.6vw; color: #d16b7c; margin-top: 1vw; font-weight: bold;">${winningOptionCNQN.name}</p>
+                        <img src="${winningIdCNQN}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #fff0f5); object-fit: contain;">
+                        <p style="font-size: 1.6vw; color: #8a1538; margin-top: 1vw; font-weight: bold;">${winningOptionCNQN.name}</p>
                     </div>
                 </div>
             `;
@@ -376,16 +381,14 @@
                 modalContentArea.innerHTML = dualHtml;
                 modal.classList.add('show');
                 
-                // Cập nhật text danh sách bên trái
                 document.getElementById(`result-4`).innerText = `Khối BO: ${winningOptionBO.name}`;
                 document.getElementById(`result-5`).innerText = `CNQN: ${winningOptionCNQN.name}`;
                 
-                // Quét lại toàn bộ để áp dụng trạng thái Exhausted nếu hết số lượng
                 optionsData.forEach(opt => {
                     if (opt.maxCount <= 0) document.getElementById(`opt-${opt.id}`).classList.add('exhausted');
                 });
 
-                currentTurnIndex += 2; // Cộng 2 vì đã chốt 2 khối
+                currentTurnIndex += 2;
                 isSpinning = false;
             }, 600);
 
@@ -406,8 +409,8 @@
             const msg = `Chúc mừng ${groupName} đã bốc trúng lựa chọn ${winningOption.name}`;
 
             const singleHtml = `
-                <img src="${winningId}.png" style="width: 14vw; filter: drop-shadow(0 0 1.5vw #ff7eb3); margin-bottom: 1.5vw; object-fit: contain;">
-                <h2 style="font-size: 2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2.5vw;">${msg}</h2>
+                <img src="${winningId}.png" style="width: 14vw; filter: drop-shadow(0 0 2vw #fff0f5); margin-bottom: 1.5vw; object-fit: contain;">
+                <h2 style="font-size: 2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2.5vw; text-shadow: 0 0 10px rgba(255,255,255,0.8);">${msg}</h2>
             `;
 
             setTimeout(() => {
