@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vòng Quay Nhân Phẩm - An Viet</title>
     <style>
-        /* Khai báo font chữ (Đảm bảo đường dẫn tới file font của bạn chính xác) */
+        /* Khai báo font chữ */
         @font-face {
             font-family: 'Beautique Display Condensed';
             src: url('fonts/BeautiqueDisplayCondensed.ttf') format('truetype'); 
-            /* Đổi đuôi .ttf, .otf, .woff tùy định dạng bạn có */
         }
 
         * {
@@ -21,7 +20,7 @@
         body, html {
             width: 100%;
             height: 100%;
-            background-color: #000; /* Nền đen để tạo viền letterbox nếu màn hình không phải 16:9 */
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,13 +28,13 @@
             overflow: hidden;
         }
 
-        /* Container ép tỷ lệ 16:9 tuyệt đối, không xô lệch */
+        /* Container ép tỷ lệ 16:9 tuyệt đối */
         .ratio-container {
             position: relative;
             width: 100vw;
-            max-width: 177.78vh; /* 16/9 * 100 */
+            max-width: 177.78vh;
             height: 100vh;
-            max-height: 56.25vw; /* 9/16 * 100 */
+            max-height: 56.25vw;
             background-color: #f7dcd6;
             overflow: hidden;
         }
@@ -87,66 +86,47 @@
             display: flex;
             justify-content: center;
             gap: 4vw;
-            margin-top: 4vw;
+            margin-top: 5vw;
         }
 
         .option-item {
             position: relative;
-            width: 11vw;
-            height: 11vw;
+            width: 12vw; /* Giữ khung rộng để hiển thị mâm rõ nét */
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 0.1s ease;
+            transition: transform 0.2s ease;
         }
 
-        .img-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-        }
-
+        /* Xử lý hiển thị và phủ mờ trực tiếp trên file PNG */
         .option-item img {
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: contain;
-            border-radius: 50%;
-        }
-
-        /* Lớp mờ đen/đỏ #330011 */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(51, 0, 17, 0.75); 
-            border-radius: 50%;
-            transition: opacity 0.2s ease;
+            /* Phủ màu tối ám đỏ/đen tương tự #330011 */
+            filter: brightness(0.35) sepia(0.8) hue-rotate(315deg) saturate(1.5);
+            transition: filter 0.2s ease, transform 0.2s ease;
         }
 
         .option-item span {
             color: #8a1538;
             font-size: 1.5vw;
-            margin-top: 1vw;
+            margin-top: 1.5vw;
+            transition: opacity 0.2s ease;
         }
 
-        /* Trạng thái đang sáng (đang quay trúng) */
+        /* Trạng thái đang sáng (quay trúng) - Phát sáng theo viền PNG */
         .option-item.active {
             transform: scale(1.15);
         }
-        .option-item.active .overlay {
-            opacity: 0; /* Xóa lớp mờ */
-        }
-        .option-item.active .img-wrapper {
-            box-shadow: 0 0 2vw #ffdf00; /* Viền sáng vàng */
+        .option-item.active img {
+            /* Trả lại màu gốc và tạo viền sáng vàng bao quanh mâm */
+            filter: brightness(1) drop-shadow(0 0 1.5vw #ffdf00);
         }
 
-        /* Trạng thái đã hết số lượng (Tô đen) */
+        /* Trạng thái đã hết số lượng (Tô đen tuyệt đối) */
         .option-item.exhausted img {
-            filter: brightness(0);
-        }
-        .option-item.exhausted .overlay {
-            opacity: 0;
+            filter: brightness(0) !important;
         }
         .option-item.exhausted span {
             opacity: 0.5;
@@ -154,7 +134,7 @@
 
         /* Nút quay */
         #btn-spin {
-            margin-top: 4vw;
+            margin-top: 5vw;
             padding: 1vw 4vw;
             background-color: #8a1538;
             color: #fff;
@@ -181,19 +161,19 @@
         .result-zone {
             position: absolute;
             left: 35%;
-            top: 60%;
+            top: 61%;
             color: #8a1538;
         }
 
         .result-zone h3 {
-            font-size: 1.8vw;
+            font-size: 1.4vw; /* Đã thu nhỏ font */
             margin-bottom: 0.5vw;
         }
 
         .result-zone ul {
             list-style: none;
-            font-size: 1.3vw;
-            line-height: 1.8vw;
+            font-size: 1.05vw; /* Đã thu nhỏ font */
+            line-height: 1.6vw;
         }
 
         /* -- POPUP THÔNG BÁO -- */
@@ -247,19 +227,15 @@
 <body>
 
 <div class="ratio-container">
-    <!-- Nền Video -->
     <video autoplay loop muted class="bg-video">
         <source src="back.mp4" type="video/mp4">
     </video>
 
-    <!-- Nội dung giao diện -->
     <div class="content">
         <!-- Danh sách kết quả -->
         <div class="result-zone">
             <h3>DANH SÁCH KẾT QUẢ</h3>
-            <ul id="list-results">
-                <!-- Javascript sẽ render danh sách vào đây -->
-            </ul>
+            <ul id="list-results"></ul>
         </div>
 
         <!-- Khu vực vòng quay -->
@@ -268,25 +244,17 @@
             <p class="subtitle">Cơ hội chỉ có một, trúng cái nào nhận cái đó<br>không có cơ hội làm lại!!!</p>
 
             <div class="options-row">
+                <!-- Đã gỡ bỏ thẻ img-wrapper và overlay -->
                 <div class="option-item" id="opt-3">
-                    <div class="img-wrapper">
-                        <img src="3.png" alt="Mâm đồng">
-                        <div class="overlay"></div>
-                    </div>
+                    <img src="3.png" alt="Mâm đồng">
                     <span>Mâm đồng</span>
                 </div>
                 <div class="option-item" id="opt-2">
-                    <div class="img-wrapper">
-                        <img src="2.png" alt="Mẹt tre">
-                        <div class="overlay"></div>
-                    </div>
+                    <img src="2.png" alt="Mẹt tre">
                     <span>Mẹt tre</span>
                 </div>
                 <div class="option-item" id="opt-1">
-                    <div class="img-wrapper">
-                        <img src="1.png" alt="Đế nhung">
-                        <div class="overlay"></div>
-                    </div>
+                    <img src="1.png" alt="Đế nhung">
                     <span>Đế nhung</span>
                 </div>
             </div>
@@ -295,7 +263,7 @@
         </div>
     </div>
 
-    <!-- Popup Thông báo trúng giải -->
+    <!-- Popup -->
     <div id="result-modal" class="modal">
         <div class="modal-box">
             <h2 id="modal-msg">Chúc mừng ...</h2>
@@ -305,17 +273,14 @@
 </div>
 
 <script>
-    // Cấu hình dữ liệu mâm
     const optionsData = [
         { id: 3, name: "Mâm đồng", maxCount: 2 },
         { id: 2, name: "Mẹt tre", maxCount: 2 },
         { id: 1, name: "Đế nhung", maxCount: 2 }
     ];
 
-    // Cấu hình danh sách khối quay lần lượt
     const groups = ["Khối A1", "Khối A2", "Khối A3", "Khối A5", "Khối BO", "CNQN"];
     
-    // Khởi tạo hồ chứa giải thưởng (tổng cộng 6 mâm cho 6 nhóm)
     let prizePool = [];
     optionsData.forEach(opt => {
         for(let i = 0; i < opt.maxCount; i++) {
@@ -326,14 +291,12 @@
     let currentTurnIndex = 0;
     let isSpinning = false;
 
-    // Các phần tử DOM
     const btnSpin = document.getElementById('btn-spin');
     const listResults = document.getElementById('list-results');
     const modal = document.getElementById('result-modal');
     const modalMsg = document.getElementById('modal-msg');
     const btnCloseModal = document.getElementById('btn-close-modal');
 
-    // Khởi tạo hiển thị danh sách kết quả (Mặc định .....)
     groups.forEach((group, index) => {
         const li = document.createElement('li');
         li.id = `result-${index}`;
@@ -341,7 +304,6 @@
         listResults.appendChild(li);
     });
 
-    // Lắng nghe sự kiện quay
     btnSpin.addEventListener('click', () => {
         if(currentTurnIndex >= groups.length || isSpinning) return;
         
@@ -349,26 +311,20 @@
         btnSpin.disabled = true;
         
         const currentGroup = groups[currentTurnIndex];
-        
-        // Lấy danh sách các mâm CÒN SỐ LƯỢNG để làm hiệu ứng nhấp nháy
         const availableOptions = optionsData.filter(o => o.maxCount > 0).map(o => o.id);
         
         let spinCount = 0;
-        const totalSpins = 30 + Math.floor(Math.random() * 10); // Lặp khoảng 30-40 lần
-        const spinSpeed = 80; // Tốc độ nhấp nháy (ms)
+        const totalSpins = 30 + Math.floor(Math.random() * 10);
+        const spinSpeed = 80; 
 
-        // Hiệu ứng vòng lặp nhấp nháy
         const interval = setInterval(() => {
-            // Tắt sáng tất cả
             document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
             
-            // Bật sáng 1 mâm ngẫu nhiên (chỉ trong những mâm còn hàng)
             const randomId = availableOptions[Math.floor(Math.random() * availableOptions.length)];
             document.getElementById(`opt-${randomId}`).classList.add('active');
 
             spinCount++;
             
-            // Điểm dừng
             if (spinCount >= totalSpins) {
                 clearInterval(interval);
                 finalizeSpin(currentGroup);
@@ -376,37 +332,28 @@
         }, spinSpeed);
     });
 
-    // Hàm chốt kết quả
     function finalizeSpin(groupName) {
-        // Bốc ngẫu nhiên 1 mâm thật từ hồ chứa (prizePool)
         const randomIndex = Math.floor(Math.random() * prizePool.length);
         const winningId = prizePool[randomIndex];
         
-        // Xóa mâm vừa trúng khỏi hồ chứa để không bốc quá 2 lần
         prizePool.splice(randomIndex, 1);
         
-        // Trừ đi số lượng trong cấu hình để quản lý bôi đen giao diện
         const winningOption = optionsData.find(o => o.id === winningId);
         winningOption.maxCount--;
 
-        // Xóa active tất cả và highlight cái trúng
         document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
         const finalEl = document.getElementById(`opt-${winningId}`);
         finalEl.classList.add('active');
 
-        // Tạo câu chúc mừng (Xử lý riêng tiền tố cho CNQN)
         let prefix = groupName === 'CNQN' ? 'CNQN' : groupName;
         const msg = `Chúc mừng ${prefix} đã bốc trúng lựa chọn ${winningOption.name}`;
 
-        // Hiển thị kết quả & modal sau 0.5s để người xem kịp nhìn mâm sáng lên
         setTimeout(() => {
             modalMsg.innerText = msg;
             modal.classList.add('show');
             
-            // Cập nhật text danh sách bên trái
             document.getElementById(`result-${currentTurnIndex}`).innerText = `${groupName}: ${winningOption.name}`;
             
-            // Kiểm tra nếu mâm này hết (count = 0) -> Cho vào trạng thái bôi đen
             if (winningOption.maxCount === 0) {
                 finalEl.classList.add('exhausted');
             }
@@ -417,14 +364,11 @@
         }, 600);
     }
 
-    // Đóng Popup và chuẩn bị lượt tiếp theo
     btnCloseModal.addEventListener('click', () => {
         modal.classList.remove('show');
         
-        // Tắt độ sáng của option vừa trúng 
         document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
 
-        // Kiểm tra nếu đã quay hết các khối thì khóa luôn nút
         if (currentTurnIndex >= groups.length) {
             btnSpin.innerText = "ĐÃ HOÀN THÀNH";
             btnSpin.disabled = true;
