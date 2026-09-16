@@ -60,7 +60,7 @@
         .right-zone {
             position: absolute;
             right: 5%;
-            top: 13%; /* Đẩy lùi toàn bộ cụm text và vòng quay xuống một chút */
+            top: 13%; 
             width: 55%;
             height: 80%;
             display: flex;
@@ -70,14 +70,14 @@
 
         .title {
             color: #8a1538;
-            font-size: 4.2vw; /* Chữ to lên */
+            font-size: 4.2vw; 
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .subtitle {
             color: #d16b7c;
-            font-size: 1.4vw; /* Chữ nhỏ bên dưới to lên */
+            font-size: 1.4vw; 
             margin-top: 0.5vw;
             text-align: center;
         }
@@ -86,7 +86,7 @@
             display: flex;
             justify-content: center;
             gap: 4vw;
-            margin-top: 2vw; /* Kéo cụm hình ảnh sát lên cụm text */
+            margin-top: 2vw; 
         }
 
         .option-item {
@@ -103,7 +103,7 @@
             height: auto;
             object-fit: contain;
             filter: brightness(0.35) sepia(0.8) hue-rotate(315deg) saturate(1.5);
-            transition: filter 0.2s ease, transform 0.2s ease;
+            transition: filter 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
         }
 
         .option-item span {
@@ -118,19 +118,21 @@
         }
         
         .option-item.active img {
-            filter: brightness(1) drop-shadow(0 0 1.5vw #ffdf00);
+            filter: brightness(1) drop-shadow(0 0 2vw #ff7eb3);
         }
 
+        /* Trạng thái đã hết số lượng (Ám hồng nhạt) */
         .option-item.exhausted img {
-            filter: brightness(0) !important;
+            filter: sepia(1) hue-rotate(315deg) saturate(2) brightness(0.7) !important;
+            opacity: 0.3;
         }
         .option-item.exhausted span {
-            opacity: 0.5;
+            opacity: 0.3;
         }
 
         /* Nút quay */
         #btn-spin {
-            margin-top: 2.5vw; /* Đẩy nút cao lên để tránh hình con thỏ bên dưới */
+            margin-top: 2.5vw; 
             padding: 1vw 4vw;
             background-color: #8a1538;
             color: #fff;
@@ -157,7 +159,7 @@
         .result-zone {
             position: absolute;
             left: 34%;
-            top: 72%; /* Đẩy lùi danh sách kết quả xuống dưới */
+            top: 72%; 
             color: #8a1538;
         }
 
@@ -172,12 +174,12 @@
             line-height: 1.6vw;
         }
 
-        /* -- POPUP THÔNG BÁO -- */
+        /* -- POPUP THÔNG BÁO (HIỆU ỨNG GLASS) -- */
         .modal {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -191,32 +193,35 @@
             pointer-events: all;
         }
         .modal-box {
-            background: #fff;
-            border: 3px solid #8a1538;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             padding: 3vw 5vw;
-            border-radius: 1vw;
+            border-radius: 1.5vw;
             text-align: center;
-            box-shadow: 0 0 3vw rgba(255,255,255,0.2);
+            box-shadow: 0 1vw 3vw rgba(0, 0, 0, 0.2);
             transform: scale(0.8);
             transition: transform 0.3s ease;
+            max-width: 65vw; /* Tăng max-width để chứa đủ 2 kết quả lượt cuối */
         }
         .modal.show .modal-box {
             transform: scale(1);
         }
-        .modal-box h2 {
-            color: #8a1538;
-            font-size: 2.5vw;
-            margin-bottom: 2vw;
-        }
+        
         #btn-close-modal {
             background: #8a1538;
             color: white;
             border: none;
-            padding: 0.8vw 3vw;
-            font-size: 1.5vw;
+            padding: 0.8vw 3.5vw;
+            font-size: 1.3vw;
             border-radius: 2vw;
             cursor: pointer;
             font-family: inherit;
+            transition: background 0.2s ease;
+        }
+        #btn-close-modal:hover {
+            background: #a81c45;
         }
     </style>
 </head>
@@ -228,13 +233,11 @@
     </video>
 
     <div class="content">
-        <!-- Danh sách kết quả -->
         <div class="result-zone">
             <h3>DANH SÁCH KẾT QUẢ</h3>
             <ul id="list-results"></ul>
         </div>
 
-        <!-- Khu vực vòng quay -->
         <div class="right-zone">
             <h1 class="title">VÒNG QUAY NHÂN PHẨM</h1>
             <p class="subtitle">Cơ hội chỉ có một, trúng cái nào nhận cái đó<br>không có cơ hội làm lại!!!</p>
@@ -261,7 +264,8 @@
     <!-- Popup -->
     <div id="result-modal" class="modal">
         <div class="modal-box">
-            <h2 id="modal-msg">Chúc mừng ...</h2>
+            <!-- Vùng hiển thị nội dung động -->
+            <div id="modal-content-area"></div>
             <button id="btn-close-modal">Xác nhận</button>
         </div>
     </div>
@@ -289,9 +293,10 @@
     const btnSpin = document.getElementById('btn-spin');
     const listResults = document.getElementById('list-results');
     const modal = document.getElementById('result-modal');
-    const modalMsg = document.getElementById('modal-msg');
+    const modalContentArea = document.getElementById('modal-content-area');
     const btnCloseModal = document.getElementById('btn-close-modal');
 
+    // Render danh sách trống lúc đầu
     groups.forEach((group, index) => {
         const li = document.createElement('li');
         li.id = `result-${index}`;
@@ -328,35 +333,98 @@
     });
 
     function finalizeSpin(groupName) {
-        const randomIndex = Math.floor(Math.random() * prizePool.length);
-        const winningId = prizePool[randomIndex];
-        
-        prizePool.splice(randomIndex, 1);
-        
-        const winningOption = optionsData.find(o => o.id === winningId);
-        winningOption.maxCount--;
-
-        document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
-        const finalEl = document.getElementById(`opt-${winningId}`);
-        finalEl.classList.add('active');
-
-        let prefix = groupName === 'CNQN' ? 'CNQN' : groupName;
-        const msg = `Chúc mừng ${prefix} đã bốc trúng lựa chọn ${winningOption.name}`;
-
-        setTimeout(() => {
-            modalMsg.innerText = msg;
-            modal.classList.add('show');
+        // Kiểm tra nếu là lượt của khối BO (Index = 4) -> Bốc luôn cho cả BO và CNQN
+        if (currentTurnIndex === 4) {
+            // Bốc cho Khối BO
+            const randomIndexBO = Math.floor(Math.random() * prizePool.length);
+            const winningIdBO = prizePool[randomIndexBO];
+            prizePool.splice(randomIndexBO, 1);
             
-            document.getElementById(`result-${currentTurnIndex}`).innerText = `${groupName}: ${winningOption.name}`;
-            
-            if (winningOption.maxCount === 0) {
-                finalEl.classList.add('exhausted');
-            }
+            const winningOptionBO = optionsData.find(o => o.id === winningIdBO);
+            winningOptionBO.maxCount--;
 
-            currentTurnIndex++;
-            isSpinning = false;
+            // Lúc này trong hồ chỉ còn 1 phần tử duy nhất dành cho CNQN
+            const winningIdCNQN = prizePool[0];
+            prizePool.splice(0, 1);
             
-        }, 600);
+            const winningOptionCNQN = optionsData.find(o => o.id === winningIdCNQN);
+            winningOptionCNQN.maxCount--;
+
+            // Cập nhật Highlight mâm (sáng cả 2 mâm nếu 2 khối bốc khác nhau)
+            document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`opt-${winningIdBO}`).classList.add('active');
+            document.getElementById(`opt-${winningIdCNQN}`).classList.add('active');
+
+            // Render giao diện Popup 2 kết quả
+            const dualHtml = `
+                <h2 style="font-size: 2.2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2vw;">Chúc mừng 2 khối cuối cùng đã hoàn tất bốc thăm!</h2>
+                <div style="display: flex; justify-content: center; gap: 6vw; margin-bottom: 2.5vw;">
+                    <div style="text-align: center;">
+                        <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">Khối BO</h3>
+                        <img src="${winningIdBO}.png" style="width: 12vw; filter: drop-shadow(0 0 1vw #ff7eb3); object-fit: contain;">
+                        <p style="font-size: 1.6vw; color: #d16b7c; margin-top: 1vw; font-weight: bold;">${winningOptionBO.name}</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">CNQN</h3>
+                        <img src="${winningIdCNQN}.png" style="width: 12vw; filter: drop-shadow(0 0 1vw #ff7eb3); object-fit: contain;">
+                        <p style="font-size: 1.6vw; color: #d16b7c; margin-top: 1vw; font-weight: bold;">${winningOptionCNQN.name}</p>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                modalContentArea.innerHTML = dualHtml;
+                modal.classList.add('show');
+                
+                // Cập nhật text danh sách bên trái
+                document.getElementById(`result-4`).innerText = `Khối BO: ${winningOptionBO.name}`;
+                document.getElementById(`result-5`).innerText = `CNQN: ${winningOptionCNQN.name}`;
+                
+                // Quét lại toàn bộ để áp dụng trạng thái Exhausted nếu hết số lượng
+                optionsData.forEach(opt => {
+                    if (opt.maxCount <= 0) document.getElementById(`opt-${opt.id}`).classList.add('exhausted');
+                });
+
+                currentTurnIndex += 2; // Cộng 2 vì đã chốt 2 khối
+                isSpinning = false;
+            }, 600);
+
+        } else {
+            // Lượt bốc bình thường (Từ A1 -> A5)
+            const randomIndex = Math.floor(Math.random() * prizePool.length);
+            const winningId = prizePool[randomIndex];
+            
+            prizePool.splice(randomIndex, 1);
+            
+            const winningOption = optionsData.find(o => o.id === winningId);
+            winningOption.maxCount--;
+
+            document.querySelectorAll('.option-item').forEach(el => el.classList.remove('active'));
+            const finalEl = document.getElementById(`opt-${winningId}`);
+            finalEl.classList.add('active');
+
+            const msg = `Chúc mừng ${groupName} đã bốc trúng lựa chọn ${winningOption.name}`;
+
+            const singleHtml = `
+                <img src="${winningId}.png" style="width: 14vw; filter: drop-shadow(0 0 1.5vw #ff7eb3); margin-bottom: 1.5vw; object-fit: contain;">
+                <h2 style="font-size: 2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2.5vw;">${msg}</h2>
+            `;
+
+            setTimeout(() => {
+                modalContentArea.innerHTML = singleHtml;
+                modal.classList.add('show');
+                
+                document.getElementById(`result-${currentTurnIndex}`).innerText = `${groupName}: ${winningOption.name}`;
+                
+                if (winningOption.maxCount <= 0) {
+                    finalEl.classList.add('exhausted');
+                }
+
+                currentTurnIndex++;
+                isSpinning = false;
+                
+            }, 600);
+        }
     }
 
     btnCloseModal.addEventListener('click', () => {
