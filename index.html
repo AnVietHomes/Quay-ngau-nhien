@@ -60,7 +60,7 @@
         .right-zone {
             position: absolute;
             right: 5%;
-            top: 10%;
+            top: 13%; /* Đẩy lùi toàn bộ cụm text và vòng quay xuống một chút */
             width: 55%;
             height: 80%;
             display: flex;
@@ -70,14 +70,14 @@
 
         .title {
             color: #8a1538;
-            font-size: 3.5vw;
+            font-size: 4.2vw; /* Chữ to lên */
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .subtitle {
             color: #d16b7c;
-            font-size: 1.2vw;
+            font-size: 1.4vw; /* Chữ nhỏ bên dưới to lên */
             margin-top: 0.5vw;
             text-align: center;
         }
@@ -86,24 +86,22 @@
             display: flex;
             justify-content: center;
             gap: 4vw;
-            margin-top: 5vw;
+            margin-top: 2vw; /* Kéo cụm hình ảnh sát lên cụm text */
         }
 
         .option-item {
             position: relative;
-            width: 12vw; /* Giữ khung rộng để hiển thị mâm rõ nét */
+            width: 12vw; 
             display: flex;
             flex-direction: column;
             align-items: center;
             transition: transform 0.2s ease;
         }
 
-        /* Xử lý hiển thị và phủ mờ trực tiếp trên file PNG */
         .option-item img {
             width: 100%;
             height: auto;
             object-fit: contain;
-            /* Phủ màu tối ám đỏ/đen tương tự #330011 */
             filter: brightness(0.35) sepia(0.8) hue-rotate(315deg) saturate(1.5);
             transition: filter 0.2s ease, transform 0.2s ease;
         }
@@ -115,16 +113,14 @@
             transition: opacity 0.2s ease;
         }
 
-        /* Trạng thái đang sáng (quay trúng) - Phát sáng theo viền PNG */
         .option-item.active {
             transform: scale(1.15);
         }
+        
         .option-item.active img {
-            /* Trả lại màu gốc và tạo viền sáng vàng bao quanh mâm */
             filter: brightness(1) drop-shadow(0 0 1.5vw #ffdf00);
         }
 
-        /* Trạng thái đã hết số lượng (Tô đen tuyệt đối) */
         .option-item.exhausted img {
             filter: brightness(0) !important;
         }
@@ -134,7 +130,7 @@
 
         /* Nút quay */
         #btn-spin {
-            margin-top: 5vw;
+            margin-top: 2.5vw; /* Đẩy nút cao lên để tránh hình con thỏ bên dưới */
             padding: 1vw 4vw;
             background-color: #8a1538;
             color: #fff;
@@ -160,19 +156,19 @@
         /* -- KHU VỰC TRÁI (KẾT QUẢ) -- */
         .result-zone {
             position: absolute;
-            left: 35%;
-            top: 61%;
+            left: 34%;
+            top: 72%; /* Đẩy lùi danh sách kết quả xuống dưới */
             color: #8a1538;
         }
 
         .result-zone h3 {
-            font-size: 1.4vw; /* Đã thu nhỏ font */
+            font-size: 1.4vw; 
             margin-bottom: 0.5vw;
         }
 
         .result-zone ul {
             list-style: none;
-            font-size: 1.05vw; /* Đã thu nhỏ font */
+            font-size: 1.05vw; 
             line-height: 1.6vw;
         }
 
@@ -244,7 +240,6 @@
             <p class="subtitle">Cơ hội chỉ có một, trúng cái nào nhận cái đó<br>không có cơ hội làm lại!!!</p>
 
             <div class="options-row">
-                <!-- Đã gỡ bỏ thẻ img-wrapper và overlay -->
                 <div class="option-item" id="opt-3">
                     <img src="3.png" alt="Mâm đồng">
                     <span>Mâm đồng</span>
