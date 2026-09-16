@@ -117,7 +117,6 @@
             transform: scale(1.15);
         }
         
-        /* Đổi Glow sang màu hồng đậm */
         .option-item.active img {
             filter: brightness(1) drop-shadow(0 0 2vw #ff1493);
         }
@@ -130,17 +129,17 @@
             opacity: 0.3;
         }
 
-        /* Nút quay - Hiệu ứng Glass mờ màu hồng nhẹ */
+        /* Nút quay */
         #btn-spin {
             margin-top: 2.5vw; 
-            padding: 0.8vw 3.5vw; /* Làm nhỏ nút */
-            background: rgba(255, 182, 193, 0.25); /* Nền kính hồng mờ */
+            padding: 0.8vw 3.5vw; 
+            background: rgba(255, 182, 193, 0.25); 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            color: #8a1538; /* Chữ đỏ đô để nổi bật trên nền kính */
+            color: #8a1538; 
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 3vw;
-            font-size: 1.4vw; /* Làm nhỏ font chữ */
+            font-size: 1.4vw; 
             font-weight: bold;
             font-family: inherit;
             cursor: pointer;
@@ -206,7 +205,7 @@
             font-weight: bold;
         }
 
-        /* -- POPUP THÔNG BÁO (HIỆU ỨNG GLASS + NOISE) -- */
+        /* -- POPUP THÔNG BÁO -- */
         .modal {
             position: absolute;
             top: 0; left: 0;
@@ -331,7 +330,7 @@
     const modalContentArea = document.getElementById('modal-content-area');
     const btnCloseModal = document.getElementById('btn-close-modal');
 
-    // Khởi tạo danh sách kết quả (Ban đầu cột bên phải để trống)
+    // Khởi tạo danh sách kết quả
     groups.forEach((group, index) => {
         const li = document.createElement('li');
         li.className = 'result-item';
@@ -391,18 +390,19 @@
             document.getElementById(`opt-${winningIdBO}`).classList.add('active');
             document.getElementById(`opt-${winningIdCNQN}`).classList.add('active');
 
+            // Đổi màu text sang #fff0f6 và glow hồng nhẹ #ff7eb3
             const dualHtml = `
-                <h2 style="font-size: 2.2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2vw; text-shadow: 0 0 10px rgba(255,255,255,0.8);">Chúc mừng 2 khối cuối cùng đã hoàn tất bốc thăm!</h2>
+                <h2 style="font-size: 2.2vw; color: #fff0f6; line-height: 1.4; margin-bottom: 2vw; text-shadow: 0 0 0.8vw #ff7eb3, 0 0 1.5vw rgba(255,126,179,0.5);">Chúc mừng 2 khối cuối cùng đã hoàn tất bốc thăm!</h2>
                 <div style="display: flex; justify-content: center; gap: 6vw; margin-bottom: 2.5vw;">
                     <div style="text-align: center;">
-                        <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">Khối BO</h3>
+                        <h3 style="font-size: 1.8vw; color: #fff0f6; margin-bottom: 1vw; text-shadow: 0 0 0.8vw #ff7eb3;">Khối BO</h3>
                         <img src="${winningIdBO}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #ff1493); object-fit: contain;">
-                        <p style="font-size: 1.6vw; color: #8a1538; margin-top: 1vw; font-weight: bold;">${winningOptionBO.name}</p>
+                        <p style="font-size: 1.6vw; color: #fff0f6; margin-top: 1vw; font-weight: bold; text-shadow: 0 0 0.8vw #ff7eb3;">${winningOptionBO.name}</p>
                     </div>
                     <div style="text-align: center;">
-                        <h3 style="font-size: 1.8vw; color: #8a1538; margin-bottom: 1vw;">CNQN</h3>
+                        <h3 style="font-size: 1.8vw; color: #fff0f6; margin-bottom: 1vw; text-shadow: 0 0 0.8vw #ff7eb3;">CNQN</h3>
                         <img src="${winningIdCNQN}.png" style="width: 12vw; filter: drop-shadow(0 0 1.5vw #ff1493); object-fit: contain;">
-                        <p style="font-size: 1.6vw; color: #8a1538; margin-top: 1vw; font-weight: bold;">${winningOptionCNQN.name}</p>
+                        <p style="font-size: 1.6vw; color: #fff0f6; margin-top: 1vw; font-weight: bold; text-shadow: 0 0 0.8vw #ff7eb3;">${winningOptionCNQN.name}</p>
                     </div>
                 </div>
             `;
@@ -438,9 +438,10 @@
 
             const msg = `Chúc mừng ${groupName} đã bốc trúng lựa chọn ${winningOption.name}`;
 
+            // Đổi màu text sang #fff0f6 và glow hồng nhẹ #ff7eb3
             const singleHtml = `
                 <img src="${winningId}.png" style="width: 14vw; filter: drop-shadow(0 0 2vw #ff1493); margin-bottom: 1.5vw; object-fit: contain;">
-                <h2 style="font-size: 2vw; color: #8a1538; line-height: 1.4; margin-bottom: 2.5vw; text-shadow: 0 0 10px rgba(255,255,255,0.8);">${msg}</h2>
+                <h2 style="font-size: 2vw; color: #fff0f6; line-height: 1.4; margin-bottom: 2.5vw; text-shadow: 0 0 0.8vw #ff7eb3, 0 0 1.5vw rgba(255,126,179,0.5);">${msg}</h2>
             `;
 
             setTimeout(() => {
